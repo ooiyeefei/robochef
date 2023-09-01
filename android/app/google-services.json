@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "713719967044",
+    "project_id": "reinvent-robochef",
+    "storage_bucket": "reinvent-robochef.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:713719967044:android:870c9eefaa3ad943083b11",
+        "android_client_info": {
+          "package_name": "com.example.robochef"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "713719967044-nqvtndnsbl559mergs4avqe1rbuo0uoo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDr7PSAQ29U2IBIbiYoFBhR-Icp5uHgOo4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "713719967044-nqvtndnsbl559mergs4avqe1rbuo0uoo.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "713719967044-dfcg4io8pjnkphrg9a0k5d921c1uj20g.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.robochef.RunnerTests"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
