@@ -5,48 +5,52 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 
 class ScannerPage extends StatefulWidget {
-    final CameraDescription camera;
+  final List<CameraDescription> cameras;
 
-    const ScannerPage({
+  const ScannerPage({
     super.key,
-    required this.camera,
+    required this.cameras,
   });
 
   @override
   ScannerPageState createState() => ScannerPageState();
 }
 
-
 class ScannerPageState extends State<ScannerPage> {
-    // Add code to initialize camera and capture images
-    late CameraController _controller;
-    late Future<void> _initializeControllerFuture;
+  // Add code to initialize camera and capture images
+  late CameraController cameraController;
+  late Future<void> _initializeControllerFuture;
+
+  Future<void> setupCameras(CameraDescription cameras) async {
+    // Create a camera controller
+    cameraController = CameraController(cameras, ResolutionPreset.medium);
+
+    // Initialize the controller, this returns a Future.
+    try {
+      _initializeControllerFuture = cameraController.initialize();
+      if (!mounted) return;
+      setState(() {});
+    } on CameraException catch (e) {
+      debugPrint("camera error $e");
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    // To display the current output from the Camera,
-    // create a CameraController.
-    _controller = CameraController(
-      // Get a specific camera from the list of available cameras.
-      widget.camera,
-      // Define the resolution to use.
-      ResolutionPreset.medium,
-    );
-
-    // Next, initialize the controller. This returns a Future.
-    _initializeControllerFuture = _controller.initialize();
+    // call the function above to initialize the camera
+    setupCameras(widget.cameras[0]);
   }
 
   @override
   void dispose() {
     // Dispose of the controller when the widget is disposed.
-    _controller.dispose();
+    cameraController.dispose();
     super.dispose();
   }
 
-    // Add code to send captured image to the backend
-    // Add code to receive and display inferenced results
+  // Add code to send captured image to the backend
+  // Add code to receive and display inferenced results
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +64,7 @@ class ScannerPageState extends State<ScannerPage> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             // If the Future is complete, display the preview.
-            return CameraPreview(_controller);
+            return CameraPreview(cameraController);
           } else {
             // Otherwise, display a loading indicator.
             return const Center(child: CircularProgressIndicator());
@@ -78,7 +82,7 @@ class ScannerPageState extends State<ScannerPage> {
 
             // Attempt to take a picture and get the file `image`
             // where it was saved.
-            final image = await _controller.takePicture();
+            final image = await cameraController.takePicture();
 
             if (!mounted) return;
 
@@ -94,7 +98,7 @@ class ScannerPageState extends State<ScannerPage> {
             );
           } catch (e) {
             // If an error occurs, log the error to the console.
-            print(e);
+            debugPrint(e.toString());
           }
         },
         child: const Icon(Icons.camera_alt),
