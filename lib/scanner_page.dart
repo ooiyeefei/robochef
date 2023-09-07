@@ -1,52 +1,63 @@
 import 'dart:async';
+import 'dart:convert';
+// import 'package:universal_html/html.dart' as html;
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'package:http/http.dart' as http;
+import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
+
+import 'env.dart';
 
 class ScannerPage extends StatefulWidget {
-    final CameraDescription camera;
+  final List<CameraDescription> cameras;
 
-    const ScannerPage({
+  const ScannerPage({
     super.key,
-    required this.camera,
+    required this.cameras,
   });
 
   @override
   ScannerPageState createState() => ScannerPageState();
 }
 
-
 class ScannerPageState extends State<ScannerPage> {
-    // Add code to initialize camera and capture images
-    late CameraController _controller;
-    late Future<void> _initializeControllerFuture;
+  // Add code to initialize camera and capture images
+  late CameraController cameraController;
+  late Future<void> _initializeControllerFuture;
+
+  Future<void> setupCameras(CameraDescription cameras) async {
+    // Create a camera controller
+    cameraController = CameraController(cameras, ResolutionPreset.medium);
+
+    // Initialize the controller, this returns a Future.
+    try {
+      _initializeControllerFuture = cameraController.initialize();
+      if (!mounted) return;
+      setState(() {});
+    } on CameraException catch (e) {
+      debugPrint("camera error $e");
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    // To display the current output from the Camera,
-    // create a CameraController.
-    _controller = CameraController(
-      // Get a specific camera from the list of available cameras.
-      widget.camera,
-      // Define the resolution to use.
-      ResolutionPreset.medium,
-    );
-
-    // Next, initialize the controller. This returns a Future.
-    _initializeControllerFuture = _controller.initialize();
+    // call the function above to initialize the camera
+    setupCameras(widget.cameras[0]);
   }
 
   @override
   void dispose() {
     // Dispose of the controller when the widget is disposed.
-    _controller.dispose();
+    cameraController.dispose();
     super.dispose();
   }
 
-    // Add code to send captured image to the backend
-    // Add code to receive and display inferenced results
+  // Add code to send captured image to the backend
+  // Add code to receive and display inferenced results
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +71,7 @@ class ScannerPageState extends State<ScannerPage> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             // If the Future is complete, display the preview.
-            return CameraPreview(_controller);
+            return CameraPreview(cameraController);
           } else {
             // Otherwise, display a loading indicator.
             return const Center(child: CircularProgressIndicator());
@@ -78,7 +89,7 @@ class ScannerPageState extends State<ScannerPage> {
 
             // Attempt to take a picture and get the file `image`
             // where it was saved.
-            final image = await _controller.takePicture();
+            final image = await cameraController.takePicture();
 
             if (!mounted) return;
 
@@ -94,7 +105,7 @@ class ScannerPageState extends State<ScannerPage> {
             );
           } catch (e) {
             // If an error occurs, log the error to the console.
-            print(e);
+            debugPrint(e.toString());
           }
         },
         child: const Icon(Icons.camera_alt),
@@ -115,7 +126,91 @@ class DisplayPictureScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Display the Picture')),
       // The image is stored as a file on the device. Use the `Image.file`
       // constructor with the given path to display the image.
-      body: Image.file(File(imagePath)),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.file(File(imagePath)),
+            ElevatedButton(
+                child: const Text('Upload'),
+                onPressed: () async {
+                  final user = FirebaseAuth.instance.currentUser;
+                  final idToken = await user?.getIdTokenResult();
+
+                  // HTTP POST request to perform file upload
+                  File imageFile = File(imagePath);
+
+                  //// Read bytes from the file object
+                  // Uint8List bytes = await imageFile.readAsBytes();
+                  //// base64 encode the bytes
+                  // String base64String = base64.encode(bytes);
+
+                  // html.Blob blob = html.Blob(await imageFile.readAsBytes());
+                  try {
+                    final request = http.post(
+                        Uri.parse(
+                            "https://6gl6qn0zu5.execute-api.us-west-2.amazonaws.com/Prod/"),
+                        // Send authorization headers to the backend.
+                        headers: {
+                          HttpHeaders.authorizationHeader:
+                              idToken!.token.toString(),
+                          HttpHeaders.contentTypeHeader: 'image/jpeg',
+                        },
+                        // body: blob);
+                        body: imageFile.readAsBytesSync());
+                  } on Exception catch (_) {
+                    rethrow;
+                  }
+
+                  //// GET request to retrieve S3 presigned URL
+                  // final response = await http.get(
+                  //   Uri.parse(
+                  //       "https://6gl6qn0zu5.execute-api.us-west-2.amazonaws.com/Prod/"),
+                  //   // Send authorization headers to the backend.
+                  //   headers: {
+                  //     HttpHeaders.authorizationHeader:
+                  //         idToken!.token.toString(),
+                  //   },
+                  // );
+                  // final lambdaResponse = jsonDecode(response.body);
+                  // debugPrint(lambdaResponse.toString());
+
+                  //// HTTP Multipart request to perform file multipart upload
+                  // try {
+                  //   final request = http.MultipartRequest(
+                  //       "POST",
+                  //       Uri.parse(
+                  //           "https://6gl6qn0zu5.execute-api.us-west-2.amazonaws.com/Prod/"));
+                  //   // Send authorization headers to the backend.
+                  //   Map<String, String> headers = {
+                  //     HttpHeaders.authorizationHeader:
+                  //         idToken!.token.toString(),
+                  //   };
+                  //   request.headers.addAll(headers);
+                  //   request.files.add(await http.MultipartFile.fromPath(
+                  //       'file', imagePath)); //fromPath('file', image));
+                  // } on Exception catch (_) {
+                  //   rethrow;
+                  // }
+
+                  // var response = await request.send();
+
+                  // var responsed = await http.Response.fromStream(response);
+
+                  // final responseData = json.decode(responsed.body);
+                }
+
+                // await availableCameras().then(
+                //   (cameras) => Navigator.push(
+                //       context,
+                //       MaterialPageRoute(
+                //           builder: (context) => ScannerPage(cameras: cameras))),
+                // );
+
+                ),
+          ],
+        ),
+      ),
     );
   }
 }
