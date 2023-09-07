@@ -1,8 +1,15 @@
 import 'dart:async';
+import 'dart:convert';
+// import 'package:universal_html/html.dart' as html;
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'package:http/http.dart' as http;
+import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
+
+import 'env.dart';
 
 class ScannerPage extends StatefulWidget {
   final List<CameraDescription> cameras;
@@ -119,7 +126,95 @@ class DisplayPictureScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Display the Picture')),
       // The image is stored as a file on the device. Use the `Image.file`
       // constructor with the given path to display the image.
-      body: Image.file(File(imagePath)),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.file(File(imagePath)),
+            ElevatedButton(
+                child: const Text('Upload'),
+                onPressed: () async {
+                  final user = FirebaseAuth.instance.currentUser;
+                  final idToken = await user?.getIdTokenResult();
+
+                  // debugPrint(user.toString());
+                  // debugPrint(idToken!.token.toString());
+                  // debugPrint(Env.agwUrl);
+
+                  // GET request to retrieve S3 presigned URL
+                  // final response = await http.get(
+                  //   Uri.parse(
+                  //       "https://6gl6qn0zu5.execute-api.us-west-2.amazonaws.com/Prod/"),
+                  //   // Send authorization headers to the backend.
+                  //   headers: {
+                  //     HttpHeaders.authorizationHeader:
+                  //         idToken!.token.toString(),
+                  //   },
+                  // );
+                  // final lambdaResponse = jsonDecode(response.body);
+                  // debugPrint(lambdaResponse.toString());
+
+                  // HTTP POST request to perform file upload
+                  File imageFile = File(imagePath);
+
+                  // Read bytes from the file object
+                  // Uint8List bytes = await imageFile.readAsBytes();
+                  // base64 encode the bytes
+                  // String base64String = base64.encode(bytes);
+
+                  // html.Blob blob = html.Blob(await imageFile.readAsBytes());
+                  try {
+                    final request = http.post(
+                        Uri.parse(
+                            "https://6gl6qn0zu5.execute-api.us-west-2.amazonaws.com/Prod/"),
+                        // Send authorization headers to the backend.
+                        headers: {
+                          HttpHeaders.authorizationHeader:
+                              idToken!.token.toString(),
+                          HttpHeaders.contentTypeHeader: 'image/jpeg',
+                        },
+                        // body: blob);
+                        body: imageFile.readAsBytesSync());
+                  } on Exception catch (_) {
+                    rethrow;
+                  }
+
+                  // HTTP Multipart request to perform file multipart upload
+                  // try {
+                  //   final request = http.MultipartRequest(
+                  //       "POST",
+                  //       Uri.parse(
+                  //           "https://6gl6qn0zu5.execute-api.us-west-2.amazonaws.com/Prod/"));
+                  //   // Send authorization headers to the backend.
+                  //   Map<String, String> headers = {
+                  //     HttpHeaders.authorizationHeader:
+                  //         idToken!.token.toString(),
+                  //   };
+                  //   request.headers.addAll(headers);
+                  //   request.files.add(await http.MultipartFile.fromPath(
+                  //       'file', imagePath)); //fromPath('file', image));
+                  // } on Exception catch (_) {
+                  //   rethrow;
+                  // }
+
+                  // var response = await request.send();
+
+                  // var responsed = await http.Response.fromStream(response);
+
+                  // final responseData = json.decode(responsed.body);
+                }
+
+                // await availableCameras().then(
+                //   (cameras) => Navigator.push(
+                //       context,
+                //       MaterialPageRoute(
+                //           builder: (context) => ScannerPage(cameras: cameras))),
+                // );
+
+                ),
+          ],
+        ),
+      ),
     );
   }
 }
