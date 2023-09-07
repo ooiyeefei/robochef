@@ -137,29 +137,12 @@ class DisplayPictureScreen extends StatelessWidget {
                   final user = FirebaseAuth.instance.currentUser;
                   final idToken = await user?.getIdTokenResult();
 
-                  // debugPrint(user.toString());
-                  // debugPrint(idToken!.token.toString());
-                  // debugPrint(Env.agwUrl);
-
-                  // GET request to retrieve S3 presigned URL
-                  // final response = await http.get(
-                  //   Uri.parse(
-                  //       "https://6gl6qn0zu5.execute-api.us-west-2.amazonaws.com/Prod/"),
-                  //   // Send authorization headers to the backend.
-                  //   headers: {
-                  //     HttpHeaders.authorizationHeader:
-                  //         idToken!.token.toString(),
-                  //   },
-                  // );
-                  // final lambdaResponse = jsonDecode(response.body);
-                  // debugPrint(lambdaResponse.toString());
-
                   // HTTP POST request to perform file upload
                   File imageFile = File(imagePath);
 
-                  // Read bytes from the file object
+                  //// Read bytes from the file object
                   // Uint8List bytes = await imageFile.readAsBytes();
-                  // base64 encode the bytes
+                  //// base64 encode the bytes
                   // String base64String = base64.encode(bytes);
 
                   // html.Blob blob = html.Blob(await imageFile.readAsBytes());
@@ -179,7 +162,20 @@ class DisplayPictureScreen extends StatelessWidget {
                     rethrow;
                   }
 
-                  // HTTP Multipart request to perform file multipart upload
+                  //// GET request to retrieve S3 presigned URL
+                  // final response = await http.get(
+                  //   Uri.parse(
+                  //       "https://6gl6qn0zu5.execute-api.us-west-2.amazonaws.com/Prod/"),
+                  //   // Send authorization headers to the backend.
+                  //   headers: {
+                  //     HttpHeaders.authorizationHeader:
+                  //         idToken!.token.toString(),
+                  //   },
+                  // );
+                  // final lambdaResponse = jsonDecode(response.body);
+                  // debugPrint(lambdaResponse.toString());
+
+                  //// HTTP Multipart request to perform file multipart upload
                   // try {
                   //   final request = http.MultipartRequest(
                   //       "POST",
