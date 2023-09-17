@@ -1,0 +1,115 @@
+{
+    "statusCode": 200,
+    "body": [
+        {
+            "_id": "LYMpsgGkPHcEMnw=-1694915338535",
+            "rekognition_inference_result": {
+                "CustomLabels": [
+                    {
+                        "Name": "bell pepper",
+                        "Confidence": 75.88400268554688,
+                        "Geometry": {
+                            "BoundingBox": {
+                                "Width": 0.1295900046825409,
+                                "Height": 0.08540999889373779,
+                                "Left": 0.4845399856567383,
+                                "Top": 0.7368000149726868
+                            }
+                        }
+                    },
+                    {
+                        "Name": "tomato",
+                        "Confidence": 67.29500579833984,
+                        "Geometry": {
+                            "BoundingBox": {
+                                "Width": 0.14848999679088593,
+                                "Height": 0.06241999939084053,
+                                "Left": 0.2540600001811981,
+                                "Top": 0.8051400184631348
+                            }
+                        }
+                    },
+                    {
+                        "Name": "bell pepper",
+                        "Confidence": 66.04000091552734,
+                        "Geometry": {
+                            "BoundingBox": {
+                                "Width": 0.14700999855995178,
+                                "Height": 0.09041000157594681,
+                                "Left": 0.5661799907684326,
+                                "Top": 0.7776899933815002
+                            }
+                        }
+                    },
+                    {
+                        "Name": "lemon",
+                        "Confidence": 41.35099792480469,
+                        "Geometry": {
+                            "BoundingBox": {
+                                "Width": 0.15049000084400177,
+                                "Height": 0.05855000019073486,
+                                "Left": 0.4055500030517578,
+                                "Top": 0.8025299906730652
+                            }
+                        }
+                    },
+                    {
+                        "Name": "pepper",
+                        "Confidence": 39.612998962402344,
+                        "Geometry": {
+                            "BoundingBox": {
+                                "Width": 0.10524000227451324,
+                                "Height": 0.12318000197410583,
+                                "Left": 0.2342900037765503,
+                                "Top": 0.6962400078773499
+                            }
+                        }
+                    }
+                ],
+                "ResponseMetadata": {
+                    "RequestId": "192d93bf-c71e-49dd-bde8-2379f60a130e",
+                    "HTTPStatusCode": 200,
+                    "HTTPHeaders": {
+                        "x-amzn-requestid": "192d93bf-c71e-49dd-bde8-2379f60a130e",
+                        "content-type": "application/x-amz-json-1.1",
+                        "content-length": "957",
+                        "date": "Sun, 17 Sep 2023 01:49:00 GMT"
+                    },
+                    "RetryAttempts": 0
+                },
+                "updated_at": "2023-09-17T01:49:00.929101",
+                "created_at": "2023-09-17T01:49:00.929101"
+            },
+            "rekognition_cropped_image_paths": {
+                "0#bounding-boxes-LYMpsgGkPHcEMnw=-1694915338535": "O53M1yAqQGMZj7FsKRkPcVSQHUZ2/generated/LYMpsgGkPHcEMnw=-1694915338535/0#bounding-boxes-LYMpsgGkPHcEMnw=-1694915338535.jpg",
+                "1#bell-pepper-LYMpsgGkPHcEMnw=-1694915338535": "O53M1yAqQGMZj7FsKRkPcVSQHUZ2/generated/LYMpsgGkPHcEMnw=-1694915338535/1#bell-pepper-LYMpsgGkPHcEMnw=-1694915338535.jpg",
+                "2#tomato-LYMpsgGkPHcEMnw=-1694915338535": "O53M1yAqQGMZj7FsKRkPcVSQHUZ2/generated/LYMpsgGkPHcEMnw=-1694915338535/2#tomato-LYMpsgGkPHcEMnw=-1694915338535.jpg",
+                "3#bell-pepper-LYMpsgGkPHcEMnw=-1694915338535": "O53M1yAqQGMZj7FsKRkPcVSQHUZ2/generated/LYMpsgGkPHcEMnw=-1694915338535/3#bell-pepper-LYMpsgGkPHcEMnw=-1694915338535.jpg",
+                "4#lemon-LYMpsgGkPHcEMnw=-1694915338535": "O53M1yAqQGMZj7FsKRkPcVSQHUZ2/generated/LYMpsgGkPHcEMnw=-1694915338535/4#lemon-LYMpsgGkPHcEMnw=-1694915338535.jpg",
+                "5#pepper-LYMpsgGkPHcEMnw=-1694915338535": "O53M1yAqQGMZj7FsKRkPcVSQHUZ2/generated/LYMpsgGkPHcEMnw=-1694915338535/5#pepper-LYMpsgGkPHcEMnw=-1694915338535.jpg"
+            },
+            "ingredients": {
+                "items": [
+                    {
+                        "ingredientName": "bell pepper",
+                        "count": 2
+                    },
+                    {
+                        "ingredientName": "tomato",
+                        "count": 1
+                    },
+                    {
+                        "ingredientName": "lemon",
+                        "count": 1
+                    },
+                    {
+                        "ingredientName": "pepper",
+                        "count": 1
+                    }
+                ],
+                "updated_at": "2023-09-17T01:49:02.011918",
+                "created_at": "2023-09-17T01:49:02.011918"
+            }
+        }
+    ]
+}

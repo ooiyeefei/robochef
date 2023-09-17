@@ -1,37 +1,10 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'scanner_page.dart';
-
-// Future<HomeScreen> home() async {
-//   // Ensure that plugin services are initialized so that `availableCameras()`
-//   // can be called before `runApp()`
-//   WidgetsFlutterBinding.ensureInitialized();
-
-//   // initialize Firebase using the DefaultFirebaseOptions object exported by the configuration file:
-//   await Firebase.initializeApp(
-//     options: DefaultFirebaseOptions.currentPlatform,
-//   );
-
-// // Obtain a list of the available cameras on the device.
-// final cameras = await availableCameras();
-
-// // Get a specific camera from the list of available cameras.
-// final firstCamera = cameras.first;
-
-// return const HomeScreen(
-//   title: 'Robochef Demo Home Page',
-// );
-
-// runApp(
-//   MaterialApp(
-//     theme: ThemeData.dark(),
-//     home: const HomePage(
-//       title: 'Robochef Demo Home Page',
-//       camera: firstCamera,
-//     ),
-//   ),
-// );
-// }
+import 'nav_bar.dart';
+import 'scanner_navbar.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
+import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 
 class HomeScreen extends StatefulWidget {
   final String title;
@@ -46,63 +19,129 @@ class HomeScreen extends StatefulWidget {
 }
 
 class HomeScreenState extends State<HomeScreen> {
-  // late List<CameraDescription> cameras = <CameraDescription>[];
-  // late CameraController cameraController;
-  // bool _isReady = false;
+  // int currentPageIndex = 0;
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  late List<CameraDescription> cameras;
+  late CameraController cameraController;
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   setupCameras();
-  // }
+  final providers = [EmailAuthProvider()];
 
-  // Future<void> setupCameras() async {
-  //   try {
-  //     // initialize cameras.
-  //     cameras = await availableCameras();
-  //     // initialize camera controllers.
-  //     cameraController = CameraController(cameras[0], ResolutionPreset.medium);
-  //     await cameraController.initialize();
-  //   } on CameraException catch (e) {
-  //     debugPrint("camera error $e");
-  //   }
-  //   if (!mounted) return;
-  //   setState(() {
-  //     _isReady = true;
-  //   });
-  // }
+  Future<void> setupCameras() async {
+    // Obtain a list of the available cameras on the device.
+    // cameras = await availableCameras();
+
+    try {
+      // initialize cameras.
+      cameras = await availableCameras();
+
+      // initialize camera controllers.
+      cameraController = CameraController(cameras[0], ResolutionPreset.medium);
+      await cameraController.initialize();
+    } on CameraException catch (e) {
+      debugPrint("camera error $e");
+    }
+    if (!mounted) return;
+    setState(() {});
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // call the function above to initialize the camera
+    setupCameras();
+  }
+
+  @override
+  void dispose() {
+    // Dispose of the controller when the widget is disposed.
+    cameraController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    // if (!cameraController.value.isInitialized) {
-    //   return const Center(
-    //     child: CircularProgressIndicator(), // Or show a loading indicator
-    //   );
-    // }
-
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         title: Text(widget.title),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ElevatedButton(
-              child: const Text('Open camera'),
-              onPressed: () async {
-                await availableCameras().then(
-                  (cameras) => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => ScannerPage(cameras: cameras))),
-                );
-              },
-            ),
-          ],
-        ),
+      bottomNavigationBar: NavBar(navigatorKey: navigatorKey),
+      body: Navigator(
+        key: navigatorKey,
+        onGenerateRoute: generateRoute,
       ),
     );
+  }
+
+  Route<dynamic> generateRoute(RouteSettings settings) {
+    switch (settings.name) {
+      case "Account":
+        return MaterialPageRoute(
+          builder: (context) {
+            return ProfileScreen(
+              providers: providers,
+              actions: [
+                SignedOutAction((context) {
+                  Navigator.pushReplacementNamed(context, '/sign-in');
+                }),
+              ],
+            );
+          },
+        );
+      // case "Scan":
+      // return FutureBuilder<Widget>(
+      //   future: _initializeControllerFuture,
+      //   builder: (context, AsyncSnapshot<void> snapshot) {
+      //     if (snapshot.hasData) {
+      //       return MaterialPageRoute(
+      //         builder: (context) async => ScannerPage(cameras: cameras),
+      //       );
+      //     } else {
+      //       return CircularProgressIndicator();
+      //     }
+      //   },
+      // );
+      // setupCameras();
+      // return MaterialPageRoute(builder: (context) {
+      //   return ScannerPage(cameras: cameras);
+      // });
+      default: // default to home page
+        return MaterialPageRoute(
+          builder: (context) => Container(
+            color: Colors.white,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    "Welcome to Robochef! 🤖 \n",
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: Colors.black, fontSize: 30),
+                    textAlign: TextAlign.center,
+                  ),
+                  const Text(
+                    "Click the button below to start scanning and \n get creative cookin' 🧑‍🍳👨‍🍳 \n",
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: Colors.black, fontSize: 18),
+                    textAlign: TextAlign.center,
+                  ),
+                  ElevatedButton(
+                    child: const Text('Start scanning'),
+                    onPressed: () async {
+                      await availableCameras().then(
+                        (cameras) => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    ScannerPage(cameras: cameras))),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+    }
   }
 }
