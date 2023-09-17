@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-// import 'package:universal_html/html.dart' as html;
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
@@ -10,34 +8,27 @@ import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 
 import 'list_ingredient_page.dart';
-import 'no_result.dart';
 
-import 'env.dart';
+class ScannerNavBarPage extends StatefulWidget {
+  final CameraController cameraController;
 
-class ScannerPage extends StatefulWidget {
-  final List<CameraDescription> cameras;
-
-  const ScannerPage({
+  const ScannerNavBarPage({
     super.key,
-    required this.cameras,
+    required this.cameraController,
   });
 
   @override
-  ScannerPageState createState() => ScannerPageState();
+  ScannerNavBarPageState createState() => ScannerNavBarPageState();
 }
 
-class ScannerPageState extends State<ScannerPage> {
+class ScannerNavBarPageState extends State<ScannerNavBarPage> {
   // Add code to initialize camera and capture images
   late CameraController cameraController;
-  late Future<void> _initializeControllerFuture;
 
-  Future<void> setupCameras(CameraDescription cameras) async {
-    // Create a camera controller
-    cameraController = CameraController(cameras, ResolutionPreset.medium);
-
+  Future<void> setupCameras() async {
     // Initialize the controller, this returns a Future.
     try {
-      _initializeControllerFuture = cameraController.initialize();
+      await cameraController.initialize();
       if (!mounted) return;
       setState(() {});
     } on CameraException catch (e) {
@@ -49,7 +40,7 @@ class ScannerPageState extends State<ScannerPage> {
   void initState() {
     super.initState();
     // call the function above to initialize the camera
-    setupCameras(widget.cameras[0]);
+    setupCameras();
   }
 
   @override
@@ -59,7 +50,6 @@ class ScannerPageState extends State<ScannerPage> {
     super.dispose();
   }
 
-  // Add code to send captured image to the backend
   // Add code to receive and display inferenced results
 
   @override
@@ -69,18 +59,22 @@ class ScannerPageState extends State<ScannerPage> {
       // You must wait until the controller is initialized before displaying the
       // camera preview. Use a FutureBuilder to display a loading spinner until the
       // controller has finished initializing.
-      body: FutureBuilder<void>(
-        future: _initializeControllerFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            // If the Future is complete, display the preview.
-            return CameraPreview(cameraController);
-          } else {
-            // Otherwise, display a loading indicator.
-            return const Center(child: CircularProgressIndicator());
-          }
-        },
+      body: AspectRatio(
+        aspectRatio: cameraController.value.aspectRatio,
+        child: CameraPreview(cameraController),
       ),
+      // FutureBuilder<void>(
+      //   future: _initializeControllerFuture,
+      //   builder: (context, snapshot) {
+      //     if (snapshot.connectionState == ConnectionState.done) {
+      //       // If the Future is complete, display the preview.
+      //       return CameraPreview(cameraController);
+      //     } else {
+      //       // Otherwise, display a loading indicator.
+      //       return const Center(child: CircularProgressIndicator());
+      //     }
+      //   },
+      // ),
       floatingActionButton: FloatingActionButton(
         // Provide an onPressed callback.
         onPressed: () async {
@@ -88,7 +82,7 @@ class ScannerPageState extends State<ScannerPage> {
           // catch the error.
           try {
             // Ensure that the camera is initialized.
-            await _initializeControllerFuture;
+            // await _initializeControllerFuture;
 
             // Attempt to take a picture and get the file `image`
             // where it was saved.
@@ -129,8 +123,7 @@ class DisplayPictureScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Display the Picture')),
       // The image is stored as a file on the device. Use the `Image.file`
       // constructor with the given path to display the image.
-      resizeToAvoidBottomInset: false,
-      body: SingleChildScrollView(
+      body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -168,23 +161,14 @@ class DisplayPictureScreen extends StatelessWidget {
                     final int length = result.length;
                     debugPrint(result.toString());
 
-                    if (length == 0) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const NoResultScreen(),
+                    await Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => ListIngredientPage(
+                          resultData: result,
+                          resultLength: length,
                         ),
-                      );
-                    } else {
-                      await Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => ListIngredientPage(
-                            resultData: result,
-                            resultLength: length,
-                          ),
-                        ),
-                      );
-                    }
+                      ),
+                    );
                   } on Exception catch (_) {
                     rethrow;
                   }
@@ -231,7 +215,7 @@ class DisplayPictureScreen extends StatelessWidget {
                 //   (cameras) => Navigator.push(
                 //       context,
                 //       MaterialPageRoute(
-                //           builder: (context) => ScannerPage(cameras: cameras))),
+                //           builder: (context) => ScannerNavBarPage(cameras: cameras))),
                 // );
 
                 ),
