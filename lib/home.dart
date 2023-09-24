@@ -1,10 +1,14 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:robochef/no_result.dart';
 import 'scanner_page.dart';
 import 'nav_bar.dart';
 import 'scanner_navbar.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
+import 'auth_gate.dart';
+import 'list_recipes_page.dart';
+import 'no_result.dart';
 
 class HomeScreen extends StatefulWidget {
   final String title;
@@ -65,7 +69,10 @@ class HomeScreenState extends State<HomeScreen> {
         backgroundColor: Theme.of(context).colorScheme.primary,
         title: Text(widget.title),
       ),
-      bottomNavigationBar: NavBar(navigatorKey: navigatorKey),
+      bottomNavigationBar: SizedBox(
+        height: (MediaQuery.sizeOf(context).height) * 0.08,
+        child: NavBar(navigatorKey: navigatorKey),
+      ),
       body: Navigator(
         key: navigatorKey,
         onGenerateRoute: generateRoute,
@@ -82,10 +89,21 @@ class HomeScreenState extends State<HomeScreen> {
               providers: providers,
               actions: [
                 SignedOutAction((context) {
-                  Navigator.pushReplacementNamed(context, '/sign-in');
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AuthGate(),
+                    ),
+                  );
                 }),
               ],
             );
+          },
+        );
+      case "Recipe":
+        return MaterialPageRoute(
+          builder: (context) {
+            return const NoResultScreen();
           },
         );
       // case "Scan":

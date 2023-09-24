@@ -9,7 +9,7 @@ import 'package:camera/camera.dart';
 import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 
-import 'list_ingredient_page.dart';
+import 'list_ingredients_page.dart';
 import 'no_result.dart';
 
 import 'env.dart';
@@ -126,7 +126,7 @@ class DisplayPictureScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Display the Picture')),
+      appBar: AppBar(title: const Text('Upload and detect for ingredients')),
       // The image is stored as a file on the device. Use the `Image.file`
       // constructor with the given path to display the image.
       resizeToAvoidBottomInset: false,
@@ -154,7 +154,7 @@ class DisplayPictureScreen extends StatelessWidget {
                   try {
                     response = await http.post(
                         Uri.parse(
-                            "https://6gl6qn0zu5.execute-api.us-west-2.amazonaws.com/Prod/"),
+                            "https://x0codvlexc.execute-api.us-west-2.amazonaws.com/Prod/"),
                         // Send authorization headers to the backend.
                         headers: {
                           HttpHeaders.authorizationHeader:
@@ -178,7 +178,7 @@ class DisplayPictureScreen extends StatelessWidget {
                     } else {
                       await Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => ListIngredientPage(
+                          builder: (context) => ListIngredientsPage(
                             resultData: result,
                             resultLength: length,
                           ),

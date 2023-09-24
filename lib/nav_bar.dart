@@ -37,6 +37,9 @@ class NavBarState extends State<NavBar> {
           //   widget.navigatorKey.currentState?.pushReplacementNamed("Scan");
           //   break;
           case 1:
+            widget.navigatorKey.currentState?.pushReplacementNamed("Recipe");
+            break;
+          case 2:
             widget.navigatorKey.currentState?.pushReplacementNamed("Account");
             break;
         }
@@ -45,9 +48,22 @@ class NavBarState extends State<NavBar> {
       selectedIndex: currentPageIndex,
       destinations: const <Widget>[
         NavigationDestination(
-          selectedIcon: Icon(Icons.home),
-          icon: Icon(Icons.home_outlined),
+          selectedIcon: Icon(
+            Icons.home,
+          ),
+          icon: Icon(
+            Icons.home_outlined,
+          ),
           label: 'Home',
+        ),
+        NavigationDestination(
+          selectedIcon: Icon(
+            Icons.library_books,
+          ),
+          icon: Icon(
+            Icons.library_books_outlined,
+          ),
+          label: 'Recipe',
         ),
         // NavigationDestination(
         //   selectedIcon: Icon(Icons.camera_alt),
@@ -55,8 +71,12 @@ class NavBarState extends State<NavBar> {
         //   label: 'Scan',
         // ),
         NavigationDestination(
-            selectedIcon: Icon(Icons.manage_accounts),
-            icon: Icon(Icons.manage_accounts_outlined),
+            selectedIcon: Icon(
+              Icons.manage_accounts,
+            ),
+            icon: Icon(
+              Icons.manage_accounts_outlined,
+            ),
             label: 'Account')
       ],
     );

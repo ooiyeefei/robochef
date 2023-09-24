@@ -56,7 +56,7 @@ class NoResultScreenState extends State<NoResultScreen> {
           const Align(
             alignment: Alignment.center,
             child: Text(
-              "Unfortunately we can't identify any ingredients :( \n Please try again!",
+              "Unfortunately we can't identify any ingredients :( \n \n Please try again! \n",
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,
@@ -64,7 +64,7 @@ class NoResultScreenState extends State<NoResultScreen> {
             ),
           ),
           ElevatedButton(
-            child: const Text('Try Scanning Again'),
+            child: const Text('Scan Again'),
             onPressed: () async {
               await availableCameras().then(
                 (cameras) => Navigator.push(

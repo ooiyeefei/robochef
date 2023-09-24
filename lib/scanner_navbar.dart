@@ -7,7 +7,7 @@ import 'package:camera/camera.dart';
 import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 
-import 'list_ingredient_page.dart';
+import 'list_ingredients_page.dart';
 
 class ScannerNavBarPage extends StatefulWidget {
   final CameraController cameraController;
@@ -163,7 +163,7 @@ class DisplayPictureScreen extends StatelessWidget {
 
                     await Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => ListIngredientPage(
+                        builder: (context) => ListIngredientsPage(
                           resultData: result,
                           resultLength: length,
                         ),
