@@ -34,7 +34,7 @@ class ListIngredientsPageState extends State<ListIngredientsPage> {
       cameras = await availableCameras();
 
       // initialize camera controllers.
-      cameraController = CameraController(cameras[0], ResolutionPreset.medium);
+      cameraController = CameraController(cameras[0], ResolutionPreset.high);
       await cameraController.initialize();
     } on CameraException catch (e) {
       debugPrint("camera error $e");
@@ -94,7 +94,7 @@ class ListIngredientsPageState extends State<ListIngredientsPage> {
                       ),
                     ),
                     subtitle: Text(
-                      widget.resultData[index]['count'],
+                      widget.resultData[index]['count'].toString(),
                       style: const TextStyle(
                         fontSize: 20.0,
                       ),

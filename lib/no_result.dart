@@ -24,7 +24,7 @@ class NoResultScreenState extends State<NoResultScreen> {
       cameras = await availableCameras();
 
       // initialize camera controllers.
-      cameraController = CameraController(cameras[0], ResolutionPreset.medium);
+      cameraController = CameraController(cameras[0], ResolutionPreset.high);
       await cameraController.initialize();
     } on CameraException catch (e) {
       debugPrint("camera error $e");
