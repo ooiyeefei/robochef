@@ -74,7 +74,13 @@ class ListIngredientsPageState extends State<ListIngredientsPage> {
               shrinkWrap: true,
               itemCount: widget.resultLength,
               itemBuilder: (context, index) {
-                final img = widget.resultData[index]['imgUrl'];
+                debugPrint(index.toString());
+                debugPrint(widget.resultLength.toString());
+                debugPrint(widget.resultData[1]['ingredient_response'][index]
+                    .toString());
+                debugPrint(widget.resultData[0]['unique_id']);
+                final img = widget.resultData[1]['ingredient_response'][index]
+                    ['imgUrl'];
                 return Card(
                   child: ListTile(
                     leading: ConstrainedBox(
@@ -87,14 +93,17 @@ class ListIngredientsPageState extends State<ListIngredientsPage> {
                       child: Image.network('$img'),
                     ),
                     title: Text(
-                      widget.resultData[index]['ingredientName'],
+                      widget.resultData[1]['ingredient_response'][index]
+                          ['ingredientName'],
                       style: const TextStyle(
                         fontSize: 25.0,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                     subtitle: Text(
-                      widget.resultData[index]['count'].toString(),
+                      widget.resultData[1]['ingredient_response'][index]
+                              ['count']
+                          .toString(),
                       style: const TextStyle(
                         fontSize: 20.0,
                       ),
@@ -106,78 +115,107 @@ class ListIngredientsPageState extends State<ListIngredientsPage> {
           ],
         ),
       ),
-      floatingActionButton: SpeedDial(
-        icon: Icons.keyboard_arrow_up,
-        activeIcon: Icons.close,
-        label: floatExtended
-            ? const Text("Open")
-            : null, // The label of the main button.
-        /// The active label of the main button, Defaults to label if not specified.
-        activeLabel: floatExtended ? const Text("Close") : null,
-        spaceBetweenChildren: 15,
+      floatingActionButton: Stack(
+        alignment: Alignment.bottomRight,
+        fit: StackFit.expand,
         children: [
-          SpeedDialChild(
-            child: const Icon(Icons.cameraswitch),
-            label: 'Scan again',
-            labelStyle: const TextStyle(
-              fontSize: 18,
-            ),
-            onTap: () async {
-              await availableCameras().then(
-                (cameras) => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ScannerPage(cameras: cameras),
-                  ),
-                ),
-              );
-            },
-          ),
-          SpeedDialChild(
-            child: const Icon(Icons.menu_book),
-            label: 'Get Recipes',
-            labelStyle: const TextStyle(
-              fontSize: 18,
-            ),
-            onTap: () async {
-              final user = FirebaseAuth.instance.currentUser;
-              final idToken = await user?.getIdTokenResult();
-              try {
-                final response = await http.get(
-                  Uri.parse(
-                      "https://veo3slmw0g.execute-api.us-west-2.amazonaws.com/Prod/"),
-                  // Send authorization headers to the backend.
-                  headers: {
-                    HttpHeaders.authorizationHeader: idToken!.token.toString(),
+          Stack(
+            alignment: Alignment.bottomLeft,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(40, 0, 0, 0),
+                child: FloatingActionButton(
+                  onPressed: () {
+                    print("refresh");
                   },
-                );
-                final lambdaResponse = jsonDecode(response.body);
-                debugPrint(lambdaResponse.toString());
-                final int length = lambdaResponse.length;
-
-                if (length == 0) {
-                  debugPrint(
-                    "no result",
-                  );
-                } else {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ListRecipesPage(
-                        resultData: lambdaResponse,
-                        resultLength: length,
-                      ),
+                  backgroundColor: Colors.blue,
+                  child: const Icon(Icons.refresh),
+                ),
+              ),
+            ],
+          ),
+          Stack(
+            alignment: Alignment.bottomRight,
+            children: [
+              SpeedDial(
+                icon: Icons.keyboard_arrow_up,
+                activeIcon: Icons.close,
+                label: floatExtended
+                    ? const Text("Open")
+                    : null, // The label of the main button.
+                /// The active label of the main button, Defaults to label if not specified.
+                activeLabel: floatExtended ? const Text("Close") : null,
+                spaceBetweenChildren: 15,
+                children: [
+                  SpeedDialChild(
+                    child: const Icon(Icons.cameraswitch),
+                    label: 'Scan again',
+                    labelStyle: const TextStyle(
+                      fontSize: 18,
                     ),
-                  );
-                }
-              } on Exception catch (_) {
-                rethrow;
-              }
-            },
+                    onTap: () async {
+                      await availableCameras().then(
+                        (cameras) => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ScannerPage(cameras: cameras),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  SpeedDialChild(
+                    child: const Icon(Icons.menu_book),
+                    label: 'Get Recipes',
+                    labelStyle: const TextStyle(
+                      fontSize: 18,
+                    ),
+                    onTap: () async {
+                      final user = FirebaseAuth.instance.currentUser;
+                      final idToken = await user?.getIdTokenResult();
+                      try {
+                        final response = await http.get(
+                          Uri.parse(
+                              "https://veo3slmw0g.execute-api.us-west-2.amazonaws.com/Prod/"),
+                          // Send authorization headers to the backend.
+                          headers: {
+                            HttpHeaders.authorizationHeader:
+                                idToken!.token.toString(),
+                            "unique_id": widget.resultData[0]['unique_id'],
+                          },
+                        );
+                        final lambdaResponse = jsonDecode(response.body);
+                        debugPrint(lambdaResponse.toString());
+                        final int length = lambdaResponse.length;
+
+                        if (length == 0) {
+                          debugPrint(
+                            "no result",
+                          );
+                        } else {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ListRecipesPage(
+                                resultData: lambdaResponse,
+                                resultLength: length,
+                              ),
+                            ),
+                          );
+                        }
+                      } on Exception catch (_) {
+                        rethrow;
+                      }
+                    },
+                  ),
+                ],
+                isOpenOnStart: false,
+              ),
+            ],
           ),
         ],
-        isOpenOnStart: false,
       ),
+      //
     );
   }
 }
