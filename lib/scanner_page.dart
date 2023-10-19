@@ -3,6 +3,7 @@ import 'dart:convert';
 // import 'package:universal_html/html.dart' as html;
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:exif/exif.dart';
 
 import 'package:aws_common/aws_common.dart';
 import 'package:flutter/material.dart';
@@ -10,16 +11,14 @@ import 'package:camera/camera.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
-// import 'package:aws_s3_upload/aws_s3_upload.dart';
 import 'package:aws_signature_v4/aws_signature_v4.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 
 import 'list_ingredients_page.dart';
 import 'no_result.dart';
-
-import 'env.dart';
 
 class ScannerPage extends StatefulWidget {
   final List<CameraDescription> cameras;
@@ -39,20 +38,33 @@ class ScannerPageState extends State<ScannerPage> {
   late Future<void> _initializeControllerFuture;
   bool floatExtended = false;
 
-  late File image;
+  // late File image;
 
-  Future pickImage() async {
-    try {
-      XFile? image = await ImagePicker().pickImage(source: ImageSource.gallery);
+  // Future pickImage() async {
+  //   try {
+  //     XFile? image = await ImagePicker().pickImage(source: ImageSource.gallery);
 
-      if (image == null) return;
+  //     if (image == null) return;
 
-      setState(() => this.image = File(image.path));
-      debugPrint(image.path);
-    } on PlatformException catch (e) {
-      print('Failed to pick image: $e');
-    }
-  }
+  //     setState(() => this.image = File(image.path));
+  //     debugPrint(image.path);
+  //   } on PlatformException catch (e) {
+  //     print('Failed to pick image: $e');
+  //   }
+  // }
+
+  // Future pickImageCamera() async {
+  //   try {
+  //     XFile? image = await ImagePicker().pickImage(source: ImageSource.camera);
+
+  //     if (image == null) return;
+
+  //     setState(() => this.image = File(image.path));
+  //     debugPrint(image.path);
+  //   } on PlatformException catch (e) {
+  //     print('Failed to pick image: $e');
+  //   }
+  // }
 
   Future<void> setupCameras(CameraDescription cameras) async {
     // Create a camera controller
@@ -104,140 +116,96 @@ class ScannerPageState extends State<ScannerPage> {
           }
         },
       ),
-      floatingActionButton: SpeedDial(
-        icon: Icons.keyboard_arrow_up,
-        activeIcon: Icons.close,
-        label: floatExtended
-            ? const Text("Open")
-            : null, // The label of the main button.
-        /// The active label of the main button, Defaults to label if not specified.
-        activeLabel: floatExtended ? const Text("Close") : null,
-        spaceBetweenChildren: 15,
-        children: [
-          SpeedDialChild(
-              child: const Icon(Icons.image),
-              label: 'Select from gallery',
-              labelStyle: const TextStyle(
-                fontSize: 18,
+      floatingActionButton:
+          // SpeedDial(
+          //   icon: Icons.keyboard_arrow_up,
+          //   activeIcon: Icons.close,
+          //   label: floatExtended
+          //       ? const Text("Open")
+          //       : null, // The label of the main button.
+          //   /// The active label of the main button, Defaults to label if not specified.
+          //   activeLabel: floatExtended ? const Text("Close") : null,
+          //   spaceBetweenChildren: 15,
+          //   children: [
+          //     SpeedDialChild(
+          //         child: const Icon(Icons.image),
+          //         label: 'Select from gallery',
+          //         labelStyle: const TextStyle(
+          //           fontSize: 18,
+          //         ),
+          //         onTap: () async {
+          //           pickImage();
+          //           image != null
+          //               ? Image.file(image)
+          //               : const Text("No image selected");
+          //           await Navigator.of(context).push(
+          //             MaterialPageRoute(
+          //               builder: (context) => DisplayPictureScreen(
+          //                 // Pass the automatically generated path to
+          //                 // the DisplayPictureScreen widget.
+          //                 imagePath: image!.path,
+          //               ),
+          //             ),
+          //           );
+          //         }
+          //         ),
+          //     SpeedDialChild(
+          //       child: const Icon(Icons.camera_alt),
+          //       label: 'Capture a new image',
+          //       labelStyle: const TextStyle(
+          //         fontSize: 18,
+          //       ),
+          //       onTap: () async {
+          //         pickImageCamera();
+          //         image != null
+          //             ? Image.file(image)
+          //             : const Text("No image selected");
+          //         await Navigator.of(context).push(
+          //           MaterialPageRoute(
+          //             builder: (context) => DisplayPictureScreen(
+          //               // Pass the automatically generated path to
+          //               // the DisplayPictureScreen widget.
+          //               imagePath: image!.path,
+          //             ),
+          //           ),
+          //         );
+          //       },
+          //     ),
+          //   ],
+          //   isOpenOnStart: false,
+          // ),
+          FloatingActionButton(
+        // Provide an onPressed callback.
+        onPressed: () async {
+          // Take the Picture in a try / catch block. If anything goes wrong,
+          // catch the error.
+          try {
+            // Ensure that the camera is initialized.
+            await _initializeControllerFuture;
+
+            // Attempt to take a picture and get the file `image`
+            // where it was saved.
+            final image = await cameraController.takePicture();
+
+            if (!mounted) return;
+
+            // If the picture was taken, display it on a new screen.
+            await Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => DisplayPictureScreen(
+                  // Pass the automatically generated path to
+                  // the DisplayPictureScreen widget.
+                  imagePath: image.path,
+                ),
               ),
-              onTap: () async {
-                pickImage();
-                image != null
-                    ? Image.file(image)
-                    : const Text("No image selected");
-                await Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => DisplayPictureScreen(
-                      // Pass the automatically generated path to
-                      // the DisplayPictureScreen widget.
-                      imagePath: image!.path,
-                    ),
-                  ),
-                );
-              }
-              // async {
-              //   await pickImage().then(
-              //     (image) => Navigator.push(
-              //       context,
-              //       MaterialPageRoute(
-              //         builder: (context) => DisplayPictureScreen(
-              //           imagePath: image.path,
-              //         ),
-              //       ),
-              //     ),
-              //   );
-              // },
-              // async {
-              //   try {
-              //     final image = await pickImage();
-              //     debugPrint(image.path);
-
-              //     // If the picture was taken, display it on a new screen.
-              //     await Navigator.of(context).push(
-              //       MaterialPageRoute(
-              //         builder: (context) => DisplayPictureScreen(
-              //           // Pass the automatically generated path to
-              //           // the DisplayPictureScreen widget.
-              //           imagePath: image.path,
-              //         ),
-              //       ),
-              //     );
-              //   } catch (e) {
-              //     // If an error occurs, log the error to the console.
-              //     debugPrint(e.toString());
-              //   }
-              // },
-              ),
-          SpeedDialChild(
-            child: const Icon(Icons.camera_alt),
-            label: 'Capture a new image',
-            labelStyle: const TextStyle(
-              fontSize: 18,
-            ),
-            onTap: () async {
-              // Take the Picture in a try / catch block. If anything goes wrong,
-              // catch the error.
-              try {
-                // Ensure that the camera is initialized.
-                await _initializeControllerFuture;
-
-                // Attempt to take a picture and get the file `image`
-                // where it was saved.
-                final image = await cameraController.takePicture();
-
-                if (!mounted) return;
-
-                // If the picture was taken, display it on a new screen.
-                await Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => DisplayPictureScreen(
-                      // Pass the automatically generated path to
-                      // the DisplayPictureScreen widget.
-                      imagePath: image.path,
-                    ),
-                  ),
-                );
-              } catch (e) {
-                // If an error occurs, log the error to the console.
-                debugPrint(e.toString());
-              }
-            },
-          ),
-        ],
-        isOpenOnStart: false,
+            );
+          } catch (e) {
+            // If an error occurs, log the error to the console.
+            debugPrint(e.toString());
+          }
+        },
+        child: const Icon(Icons.camera_alt),
       ),
-      // FloatingActionButton(
-      //   // Provide an onPressed callback.
-      //   onPressed: () async {
-      //     // Take the Picture in a try / catch block. If anything goes wrong,
-      //     // catch the error.
-      //     try {
-      //       // Ensure that the camera is initialized.
-      //       await _initializeControllerFuture;
-
-      //       // Attempt to take a picture and get the file `image`
-      //       // where it was saved.
-      //       final image = await cameraController.takePicture();
-
-      //       if (!mounted) return;
-
-      //       // If the picture was taken, display it on a new screen.
-      //       await Navigator.of(context).push(
-      //         MaterialPageRoute(
-      //           builder: (context) => DisplayPictureScreen(
-      //             // Pass the automatically generated path to
-      //             // the DisplayPictureScreen widget.
-      //             imagePath: image.path,
-      //           ),
-      //         ),
-      //       );
-      //     } catch (e) {
-      //       // If an error occurs, log the error to the console.
-      //       debugPrint(e.toString());
-      //     }
-      //   },
-      //   child: const Icon(Icons.camera_alt),
-      // ),
     );
   }
 }
@@ -263,8 +231,8 @@ class DisplayPictureScreen extends StatelessWidget {
             ElevatedButton(
                 child: const Text('Upload'),
                 onPressed: () async {
-                  // final user = FirebaseAuth.instance.currentUser;
-                  // final idToken = await user?.getIdTokenResult();
+                  final user = FirebaseAuth.instance.currentUser;
+                  final idToken = await user?.getIdTokenResult();
 
                   // HTTP POST request to perform file upload
                   File imageFile = File(imagePath);
@@ -277,113 +245,109 @@ class DisplayPictureScreen extends StatelessWidget {
                   // html.Blob blob = html.Blob(await imageFile.readAsBytes());
 
                   // upload with access key using aws sig4 library https://aws.amazon.com/blogs/opensource/introducing-the-aws-sigv4-signer-for-dart/
-                  const region = 'us-west-2';
-                  const signer = AWSSigV4Signer();
-                  final scope = AWSCredentialScope(
-                      region: region, service: AWSService.s3);
-                  const bucketName = 'camera-photos-upload';
-                  const host = '$bucketName.s3.$region.amazonaws.com';
-                  final serviceConfiguration = S3ServiceConfiguration();
+                  // const region = 'us-west-2';
+                  // const signer = AWSSigV4Signer();
+                  // final scope = AWSCredentialScope(
+                  //     region: region, service: AWSService.s3);
+                  // const bucketName = 'camera-photos-upload';
+                  // const host = '$bucketName.s3.$region.amazonaws.com';
+                  // final serviceConfiguration = S3ServiceConfiguration();
 
 // Create a file and write some contents to it. Then, open it
 // for reading.
                   final Directory directory =
                       await getApplicationDocumentsDirectory();
                   final filename = File('${directory.path}/testImage.jpg');
-                  print(filename.path);
-                  final uint8List = imageFile.readAsBytesSync();
-                  final file = filename..writeAsBytesSync(uint8List);
-                  final contents = file.openRead();
-                  const key = '/testImage.jpg';
+                  final targetPath = '${directory.path}/cleanImage.jpg';
+                  await FlutterImageCompress.compressAndGetFile(
+                      imageFile.path, targetPath);
 
-                  // const filename = 'myfile.txt';
-                  // final file = File(filename)..writeAsStringSync('my file');
-                  // final contents = file.openRead();
-                  // const key = '/$filename';
+                  debugPrint('original file: ${imageFile.path}');
+                  debugPrint('clean file: $targetPath');
+                  final cleanFilename = File(targetPath);
+
+                  // // get image EXIF metadata
+                  // final fileBytes = cleanFilename.readAsBytesSync();
+                  // final data = await readExifFromBytes(fileBytes);
+                  // debugPrint('image metadata: ');
+                  // for (final e in data.entries) {
+                  //   debugPrint('${e.key} = ${e.value}');
+                  // }
+
+                  final uint8List = cleanFilename.readAsBytesSync();
+                  final file = File(targetPath)..writeAsBytesSync(uint8List);
+                  final contents = file.openRead();
+                  const key = '/O53M1yAqQGMZj7FsKRkPcVSQHUZ2/cleanImage.jpg';
 
 // Create a PUT request to the path of the file.
-                  print('creating upload requests...');
-                  final uploadRequest = AWSStreamedHttpRequest.raw(
-                    method: AWSHttpMethod.put,
-                    host: host,
-                    // uri: Uri.parse('http://$host'),
-                    path: key,
-                    body: contents,
-                    headers: {
-                      AWSHeaders.host: host,
-                      AWSHeaders.contentType: 'image/jpeg',
-                    },
-                  );
+                  // print('creating upload requests...');
+                  // final uploadRequest = AWSStreamedHttpRequest.raw(
+                  //   method: AWSHttpMethod.put,
+                  //   host: host,
+                  //   // uri: Uri.parse('http://$host'),
+                  //   path: key,
+                  //   body: contents,
+                  //   headers: {
+                  //     AWSHeaders.host: host,
+                  //     AWSHeaders.contentType: 'image/jpeg',
+                  //   },
+                  // );
 
 // Sign and send the upload request
-                  print('signing and sending upload requests...');
-                  final signedUploadRequest = await signer.sign(
-                    uploadRequest,
-                    credentialScope: scope,
-                    serviceConfiguration: serviceConfiguration,
-                  );
-                  final uploadResponse = await signedUploadRequest.send();
-                  // final uploadStatus = uploadResponse.statusCode;
-                  // print('Upload File Response: $uploadStatus');
-                  // if (uploadStatus != 200) {
-                  //   print('Could not upload file');
-                  // }
-
-                  // with aws_s3_upload library
-                  // try {
-                  //   Future<String?> result = AwsS3.uploadFile(
-                  //     accessKey: "NOTHING_HERE",
-                  //     secretKey: "NOTHING_HERE",
-                  //     file: imageFile,
-                  //     bucket: "camera-photos-upload",
-                  //     region: "us-west-2",
-                  //     // metadata: {"test": "test"} // optional
-                  //   );
-                  //   debugPrint(result.toString());
-                  // } catch (e) {
-                  //   print(e.toString());
-                  //   rethrow; // Throw the error
-                  // }
+                  // print('signing and sending upload requests...');
+                  // final signedUploadRequest = await signer.sign(
+                  //   uploadRequest,
+                  //   credentialScope: scope,
+                  //   serviceConfiguration: serviceConfiguration,
+                  // );
+                  // final uploadResponse = await signedUploadRequest.send();
 
                   // http upload - agw
-                  // final http.Response response;
-                  // try {
-                  //   response = await http.post(
-                  //       Uri.parse(
-                  //           "https://x0codvlexc.execute-api.us-west-2.amazonaws.com/Prod/"),
-                  //       // Send authorization headers to the backend.
-                  //       headers: {
-                  //         HttpHeaders.authorizationHeader:
-                  //             idToken!.token.toString(),
-                  //         HttpHeaders.contentTypeHeader: 'image/jpeg',
-                  //       },
-                  //       // body: blob);
-                  //       body: imageFile.readAsBytesSync());
+                  final http.Response response;
+                  try {
+                    response = await http.post(
+                        Uri.parse(
+                            "https://x0codvlexc.execute-api.us-west-2.amazonaws.com/Prod/"),
+                        // Send authorization headers to the backend.
+                        headers: {
+                          HttpHeaders.authorizationHeader:
+                              idToken!.token.toString(),
+                          HttpHeaders.contentTypeHeader: 'image/jpeg',
+                          "unique_id": "abcde",
+                        },
+                        // body: blob);
+                        body: cleanFilename.readAsBytesSync());
+                    // body: imageFile.readAsBytesSync());
 
-                  //   final List result = json.decode(response.body);
-                  //   final int length = result.length;
-                  //   debugPrint(result.toString());
+                    // final int statusCode =
+                    //     json.decode(response.statusCode.toString());
+                    // print(statusCode);
 
-                  //   if (length == 0) {
-                  //     Navigator.push(
-                  //       context,
-                  //       MaterialPageRoute(
-                  //         builder: (context) => const NoResultScreen(),
-                  //       ),
-                  //     );
-                  //   } else {
-                  //     await Navigator.of(context).push(
-                  //       MaterialPageRoute(
-                  //         builder: (context) => ListIngredientsPage(
-                  //           resultData: result,
-                  //           resultLength: length,
-                  //         ),
-                  //       ),
-                  //     );
-                  //   }
-                  // } on Exception catch (_) {
-                  //   rethrow;
-                  // }
+                    final List result = json.decode(response.body);
+                    final int length = result[1]['ingredient_response'].length;
+                    print(result);
+                    print(length);
+
+                    if (length == 0) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const NoResultScreen(),
+                        ),
+                      );
+                    } else {
+                      await Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => ListIngredientsPage(
+                            resultData: result,
+                            resultLength: length,
+                          ),
+                        ),
+                      );
+                    }
+                  } on Exception catch (_) {
+                    rethrow;
+                  }
 
                   //// GET request to retrieve S3 presigned URL
                   // final response = await http.get(
