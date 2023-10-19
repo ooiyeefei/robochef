@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 
 import 'scanner_page.dart';
 import 'list_recipes_page.dart';
+import 'no_result.dart';
 
 class ListIngredientsPage extends StatefulWidget {
   final List resultData;
@@ -21,6 +23,8 @@ class ListIngredientsPage extends StatefulWidget {
 }
 
 class ListIngredientsPageState extends State<ListIngredientsPage> {
+  // final StreamController<List> ingredientsStreamController =
+  // ingredientsStreamController<List>();
   bool floatExtended = false;
   late List<CameraDescription> cameras;
   late CameraController cameraController;
@@ -43,17 +47,37 @@ class ListIngredientsPageState extends State<ListIngredientsPage> {
     setState(() {});
   }
 
+  // void startStreamIngredientsList() async {
+  //   Timer.periodic(
+  //     const Duration(seconds: 30),
+  //     (timer) async {
+  //       if (ingredientsStreamController.isClosed) return timer.cancel();
+
+  //       final response = await http.get(Uri.parse('<MY_GET_REQUEST_LINK>'));
+  //       final items = json.decode(response.body).cast<Map<String, dynamic>>();
+
+  //       List<Ingredients> Ingredients = items.map<Ingredients>((json) {
+  //         return Ingredients.fromJson(json);
+  //       }).toList();
+
+  //       IngredientsStreamController.sink.add(Ingredients);
+  //     },
+  //   );
+  // }
+
   @override
   void initState() {
     super.initState();
     // call the function above to initialize the camera
     setupCameras();
+    // startStreamIngredientsList();
   }
 
   @override
   void dispose() {
     // Dispose of the controller when the widget is disposed.
     cameraController.dispose();
+    // ingredientsStreamController.close();
     super.dispose();
   }
 
@@ -74,11 +98,6 @@ class ListIngredientsPageState extends State<ListIngredientsPage> {
               shrinkWrap: true,
               itemCount: widget.resultLength,
               itemBuilder: (context, index) {
-                debugPrint(index.toString());
-                debugPrint(widget.resultLength.toString());
-                debugPrint(widget.resultData[1]['ingredient_response'][index]
-                    .toString());
-                debugPrint(widget.resultData[0]['unique_id']);
                 final img = widget.resultData[1]['ingredient_response'][index]
                     ['imgUrl'];
                 return Card(
@@ -125,8 +144,52 @@ class ListIngredientsPageState extends State<ListIngredientsPage> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(40, 0, 0, 0),
                 child: FloatingActionButton(
-                  onPressed: () {
-                    print("refresh");
+                  onPressed: () async {
+                    final user = FirebaseAuth.instance.currentUser;
+                    final idToken = await user?.getIdTokenResult();
+                    // http get to refresh ingredient lists
+                    final http.Response response;
+                    try {
+                      response = await http.get(
+                        Uri.parse(
+                            "https://x0codvlexc.execute-api.us-west-2.amazonaws.com/Prod/refreshIngredients"),
+                        // Send authorization headers to the backend.
+                        headers: {
+                          HttpHeaders.authorizationHeader:
+                              idToken!.token.toString(),
+                          "unique_id": '${widget.resultData[0]['unique_id']}',
+                        },
+                      );
+                      print("===============");
+                      print('${widget.resultData[0]['unique_id']}');
+                      print(response.statusCode);
+
+                      final List result = json.decode(response.body);
+                      final int length =
+                          result[1]['ingredient_response'].length;
+                      print(result);
+                      print(length);
+
+                      if (length == 0) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const NoResultScreen(),
+                          ),
+                        );
+                      } else {
+                        await Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => ListIngredientsPage(
+                              resultData: result,
+                              resultLength: length,
+                            ),
+                          ),
+                        );
+                      }
+                    } on Exception catch (_) {
+                      rethrow;
+                    }
                   },
                   backgroundColor: Colors.blue,
                   child: const Icon(Icons.refresh),

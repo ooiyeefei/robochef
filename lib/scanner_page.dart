@@ -313,7 +313,6 @@ class DisplayPictureScreen extends StatelessWidget {
                           HttpHeaders.authorizationHeader:
                               idToken!.token.toString(),
                           HttpHeaders.contentTypeHeader: 'image/jpeg',
-                          "unique_id": "abcde",
                         },
                         // body: blob);
                         body: cleanFilename.readAsBytesSync());
