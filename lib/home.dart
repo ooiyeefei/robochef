@@ -1,15 +1,14 @@
 import 'dart:io';
 
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:robochef/no_result.dart';
-import 'nav_bar.dart';
-import 'display_image_upload.dart';
-import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
+
+import 'nav_bar.dart';
+import 'no_result.dart';
+import 'display_image_upload.dart';
 import 'auth_gate.dart';
 
 class HomeScreen extends StatefulWidget {

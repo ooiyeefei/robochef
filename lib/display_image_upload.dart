@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -22,13 +23,32 @@ class DisplayPictureScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Upload and get ingredients')),
       // resizeToAvoidBottomInset: false,
       body: SizedBox(
-        height: MediaQuery.of(context).size.height * 1,
-        child: Image.file(
-          File(imagePath),
-          fit: BoxFit.contain,
-          height: MediaQuery.of(context).size.height,
-          width: MediaQuery.of(context).size.width,
-          alignment: Alignment.center,
+        height: MediaQuery.of(context).size.height,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.file(
+              File(imagePath),
+              fit: BoxFit.cover,
+            ),
+            ClipRRect(
+              // Clip it cleanly.
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                child: Container(
+                  color: Colors.grey.withOpacity(0.3),
+                  alignment: Alignment.center,
+                  child: Image.file(
+                    File(imagePath),
+                    fit: BoxFit.contain,
+                    height: MediaQuery.of(context).size.height,
+                    width: MediaQuery.of(context).size.width,
+                    alignment: Alignment.center,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -40,10 +60,9 @@ class DisplayPictureScreen extends StatelessWidget {
           // HTTP POST request to perform file upload
           File imageFile = File(imagePath);
 
-// Create a file and write some contents to it. Then, open it
-// for reading.
+          // Create a file and write some contents to it. Then, open it
+          // for reading.
           final Directory directory = await getApplicationDocumentsDirectory();
-          final filename = File('${directory.path}/testImage.jpg');
           final targetPath = '${directory.path}/cleanImage.jpg';
           await FlutterImageCompress.compressAndGetFile(
               imageFile.path, targetPath);
@@ -52,10 +71,10 @@ class DisplayPictureScreen extends StatelessWidget {
           debugPrint('clean file: $targetPath');
           final cleanFilename = File(targetPath);
 
-          final uint8List = cleanFilename.readAsBytesSync();
-          final file = File(targetPath)..writeAsBytesSync(uint8List);
-          final contents = file.openRead();
-          const key = '/O53M1yAqQGMZj7FsKRkPcVSQHUZ2/cleanImage.jpg';
+          // final uint8List = cleanFilename.readAsBytesSync();
+          // final file = File(targetPath)..writeAsBytesSync(uint8List);
+          // final contents = file.openRead();
+          // const key = '/O53M1yAqQGMZj7FsKRkPcVSQHUZ2/cleanImage.jpg';
 
           // http upload - agw
           final http.Response response;
@@ -68,9 +87,7 @@ class DisplayPictureScreen extends StatelessWidget {
                   HttpHeaders.authorizationHeader: idToken!.token.toString(),
                   HttpHeaders.contentTypeHeader: 'image/jpeg',
                 },
-                // body: blob);
                 body: cleanFilename.readAsBytesSync());
-            // body: imageFile.readAsBytesSync());
 
             // final int statusCode =
             //     json.decode(response.statusCode.toString());
@@ -78,8 +95,8 @@ class DisplayPictureScreen extends StatelessWidget {
 
             final List result = json.decode(response.body);
             final int length = result[1]['ingredient_response'].length;
-            print(result);
-            print(length);
+            // print(result);
+            // print(length);
 
             if (length == 0) {
               Navigator.push(
