@@ -9,6 +9,7 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:image_picker/image_picker.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import 'display_image_upload.dart';
 import 'list_recipes_page.dart';
@@ -119,6 +120,8 @@ class ListIngredientsPageState extends State<ListIngredientsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final deviceHeight = MediaQuery.sizeOf(context).height;
+    final deviceWidth = MediaQuery.sizeOf(context).width;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
@@ -143,13 +146,23 @@ class ListIngredientsPageState extends State<ListIngredientsPage> {
                   return Card(
                     child: ListTile(
                       leading: ConstrainedBox(
-                        constraints: const BoxConstraints(
-                          minWidth: 50,
-                          minHeight: 50,
-                          maxWidth: 80,
-                          maxHeight: 80,
+                        constraints: BoxConstraints(
+                          minWidth: deviceWidth * 0.25,
+                          minHeight: deviceHeight * 0.3,
                         ),
-                        child: Image.network('$img'),
+                        child: CachedNetworkImage(
+                          fit: BoxFit.contain,
+                          memCacheHeight: (deviceHeight * 0.15).toInt(),
+                          // height: (MediaQuery.sizeOf(context).height) * 0.3,
+                          imageUrl: "$img",
+                          progressIndicatorBuilder:
+                              (context, url, downloadProgress) =>
+                                  CircularProgressIndicator(
+                                      value: downloadProgress.progress),
+                          errorWidget: (context, url, error) =>
+                              const Icon(Icons.error),
+                        ),
+                        // Image.network('$img'),
                       ),
                       title: Text(
                         widget.resultData[1]['ingredient_response'][index]
