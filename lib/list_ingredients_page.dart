@@ -98,37 +98,43 @@ class ListIngredientsPageState extends State<ListIngredientsPage> {
               shrinkWrap: true,
               itemCount: widget.resultLength,
               itemBuilder: (context, index) {
-                final img = widget.resultData[1]['ingredient_response'][index]
-                    ['imgUrl'];
-                return Card(
-                  child: ListTile(
-                    leading: ConstrainedBox(
-                      constraints: const BoxConstraints(
-                        minWidth: 50,
-                        minHeight: 50,
-                        maxWidth: 80,
-                        maxHeight: 80,
+                if (widget.resultData[1]['ingredient_response'][index]
+                        ['count'] !=
+                    0) {
+                  final img = widget.resultData[1]['ingredient_response'][index]
+                      ['imgUrl'];
+                  return Card(
+                    child: ListTile(
+                      leading: ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          minWidth: 50,
+                          minHeight: 50,
+                          maxWidth: 80,
+                          maxHeight: 80,
+                        ),
+                        child: Image.network('$img'),
                       ),
-                      child: Image.network('$img'),
-                    ),
-                    title: Text(
-                      widget.resultData[1]['ingredient_response'][index]
-                          ['ingredientName'],
-                      style: const TextStyle(
-                        fontSize: 25.0,
-                        fontWeight: FontWeight.w500,
+                      title: Text(
+                        widget.resultData[1]['ingredient_response'][index]
+                            ['ingredientName'],
+                        style: const TextStyle(
+                          fontSize: 25.0,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      subtitle: Text(
+                        widget.resultData[1]['ingredient_response'][index]
+                                ['count']
+                            .toString(),
+                        style: const TextStyle(
+                          fontSize: 20.0,
+                        ),
                       ),
                     ),
-                    subtitle: Text(
-                      widget.resultData[1]['ingredient_response'][index]
-                              ['count']
-                          .toString(),
-                      style: const TextStyle(
-                        fontSize: 20.0,
-                      ),
-                    ),
-                  ),
-                );
+                  );
+                } else {
+                  return const SizedBox(width: 0);
+                }
               },
             ),
           ],

@@ -136,7 +136,7 @@ class RecipeDetailPageState extends State<RecipeDetailPage>
                             trailing: const Icon(
                               Icons.local_grocery_store,
                               color: Colors.blue,
-                              size: 18,
+                              size: 17,
                             ),
                             title: const Padding(
                               padding: EdgeInsets.only(
@@ -145,7 +145,7 @@ class RecipeDetailPageState extends State<RecipeDetailPage>
                               child: Text(
                                 "Ingredients",
                                 style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 17,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -177,7 +177,7 @@ class RecipeDetailPageState extends State<RecipeDetailPage>
                               child: Text(
                                 "Instructions",
                                 style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 17,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
