@@ -94,9 +94,8 @@ class DisplayPictureScreen extends StatelessWidget {
             // print(statusCode);
 
             final List result = json.decode(response.body);
-            final int length = result[1]['ingredient_response'].length;
-            // print(result);
-            // print(length);
+            final Map response = result.length != 2 ? {} : result[1];
+            final num length = response.containsKey("ingredient_response") ? response["ingredient_response"].length : 0;
 
             if (length == 0) {
               Navigator.push(
