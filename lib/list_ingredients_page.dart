@@ -1,13 +1,19 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:camera/camera.dart';
+// import 'package:camera/camera.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
+import 'package:image_picker/image_picker.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
-import 'scanner_page.dart';
+import 'display_image_upload.dart';
 import 'list_recipes_page.dart';
+import 'no_result.dart';
 
 class ListIngredientsPage extends StatefulWidget {
   final List resultData;
@@ -21,50 +27,108 @@ class ListIngredientsPage extends StatefulWidget {
 }
 
 class ListIngredientsPageState extends State<ListIngredientsPage> {
+  // final StreamController<List> ingredientsStreamController =
+  // ingredientsStreamController<List>();
   bool floatExtended = false;
-  late List<CameraDescription> cameras;
-  late CameraController cameraController;
+  // late List<CameraDescription> cameras;
+  // late CameraController cameraController;
 
-  Future<void> setupCameras() async {
-    // Obtain a list of the available cameras on the device.
-    // cameras = await availableCameras();
+  File? image;
 
+  Future<bool> pickImage() async {
     try {
-      // initialize cameras.
-      cameras = await availableCameras();
+      XFile? image = await ImagePicker().pickImage(source: ImageSource.gallery);
 
-      // initialize camera controllers.
-      cameraController = CameraController(cameras[0], ResolutionPreset.high);
-      await cameraController.initialize();
-    } on CameraException catch (e) {
-      debugPrint("camera error $e");
+      if (image == null) {
+        return false;
+      } else {
+        setState(() => this.image = File(image.path));
+        debugPrint(image.path);
+        return true;
+      }
+    } on PlatformException catch (e) {
+      print('Failed to pick image: $e');
+      rethrow;
     }
-    if (!mounted) return;
-    setState(() {});
   }
+
+  Future<bool> pickImageCamera() async {
+    try {
+      XFile? image = await ImagePicker().pickImage(source: ImageSource.camera);
+
+      if (image == null) {
+        return false;
+      } else {
+        setState(() => this.image = File(image.path));
+        debugPrint(image.path);
+        return true;
+      }
+    } on PlatformException catch (e) {
+      print('Failed to pick image: $e');
+      rethrow;
+    }
+  }
+
+  // Future<void> setupCameras() async {
+  //   try {
+  //     // initialize cameras.
+  //     cameras = await availableCameras();
+
+  //     // initialize camera controllers.
+  //     cameraController = CameraController(cameras[0], ResolutionPreset.high);
+  //     await cameraController.initialize();
+  //   } on CameraException catch (e) {
+  //     debugPrint("camera error $e");
+  //   }
+  //   if (!mounted) return;
+  //   setState(() {});
+  // }
+
+  // void startStreamIngredientsList() async {
+  //   Timer.periodic(
+  //     const Duration(seconds: 30),
+  //     (timer) async {
+  //       if (ingredientsStreamController.isClosed) return timer.cancel();
+
+  //       final response = await http.get(Uri.parse('<MY_GET_REQUEST_LINK>'));
+  //       final items = json.decode(response.body).cast<Map<String, dynamic>>();
+
+  //       List<Ingredients> Ingredients = items.map<Ingredients>((json) {
+  //         return Ingredients.fromJson(json);
+  //       }).toList();
+
+  //       IngredientsStreamController.sink.add(Ingredients);
+  //     },
+  //   );
+  // }
 
   @override
   void initState() {
     super.initState();
     // call the function above to initialize the camera
-    setupCameras();
+    // setupCameras();
+    // startStreamIngredientsList();
   }
 
   @override
   void dispose() {
     // Dispose of the controller when the widget is disposed.
-    cameraController.dispose();
+    // cameraController.dispose();
+    // ingredientsStreamController.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final deviceHeight = MediaQuery.sizeOf(context).height;
+    final deviceWidth = MediaQuery.sizeOf(context).width;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
         title: const Text("Ingredient List"),
       ),
       body: SingleChildScrollView(
+        padding: const EdgeInsets.only(bottom: 60),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -74,42 +138,53 @@ class ListIngredientsPageState extends State<ListIngredientsPage> {
               shrinkWrap: true,
               itemCount: widget.resultLength,
               itemBuilder: (context, index) {
-                debugPrint(index.toString());
-                debugPrint(widget.resultLength.toString());
-                debugPrint(widget.resultData[1]['ingredient_response'][index]
-                    .toString());
-                debugPrint(widget.resultData[0]['unique_id']);
-                final img = widget.resultData[1]['ingredient_response'][index]
-                    ['imgUrl'];
-                return Card(
-                  child: ListTile(
-                    leading: ConstrainedBox(
-                      constraints: const BoxConstraints(
-                        minWidth: 50,
-                        minHeight: 50,
-                        maxWidth: 80,
-                        maxHeight: 80,
+                if (widget.resultData[1]['ingredient_response'][index]
+                        ['count'] !=
+                    0) {
+                  final img = widget.resultData[1]['ingredient_response'][index]
+                      ['imgUrl'];
+                  return Card(
+                    child: ListTile(
+                      leading: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minWidth: deviceWidth * 0.25,
+                          minHeight: deviceHeight * 0.3,
+                        ),
+                        child: CachedNetworkImage(
+                          fit: BoxFit.contain,
+                          memCacheHeight: (deviceHeight * 0.15).toInt(),
+                          // height: (MediaQuery.sizeOf(context).height) * 0.3,
+                          imageUrl: "$img",
+                          progressIndicatorBuilder:
+                              (context, url, downloadProgress) =>
+                                  CircularProgressIndicator(
+                                      value: downloadProgress.progress),
+                          errorWidget: (context, url, error) =>
+                              const Icon(Icons.error),
+                        ),
+                        // Image.network('$img'),
                       ),
-                      child: Image.network('$img'),
-                    ),
-                    title: Text(
-                      widget.resultData[1]['ingredient_response'][index]
-                          ['ingredientName'],
-                      style: const TextStyle(
-                        fontSize: 25.0,
-                        fontWeight: FontWeight.w500,
+                      title: Text(
+                        widget.resultData[1]['ingredient_response'][index]
+                            ['ingredientName'],
+                        style: const TextStyle(
+                          fontSize: 25.0,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      subtitle: Text(
+                        widget.resultData[1]['ingredient_response'][index]
+                                ['count']
+                            .toString(),
+                        style: const TextStyle(
+                          fontSize: 20.0,
+                        ),
                       ),
                     ),
-                    subtitle: Text(
-                      widget.resultData[1]['ingredient_response'][index]
-                              ['count']
-                          .toString(),
-                      style: const TextStyle(
-                        fontSize: 20.0,
-                      ),
-                    ),
-                  ),
-                );
+                  );
+                } else {
+                  return const SizedBox(width: 0);
+                }
               },
             ),
           ],
@@ -124,12 +199,57 @@ class ListIngredientsPageState extends State<ListIngredientsPage> {
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(40, 0, 0, 0),
-                child: FloatingActionButton(
-                  onPressed: () {
-                    print("refresh");
-                  },
-                  backgroundColor: Colors.blue,
-                  child: const Icon(Icons.refresh),
+                child: SizedBox(
+                  height: (MediaQuery.sizeOf(context).height) * 0.06,
+                  child: FittedBox(
+                    child: FloatingActionButton(
+                      onPressed: () async {
+                        final user = FirebaseAuth.instance.currentUser;
+                        final idToken = await user?.getIdTokenResult();
+                        // http get to refresh ingredient lists
+                        final http.Response response;
+                        try {
+                          response = await http.get(
+                            Uri.parse(
+                                "https://x0codvlexc.execute-api.us-west-2.amazonaws.com/Prod/refreshIngredients"),
+                            // Send authorization headers to the backend.
+                            headers: {
+                              HttpHeaders.authorizationHeader:
+                                  idToken!.token.toString(),
+                              "unique_id":
+                                  '${widget.resultData[0]['unique_id']}',
+                            },
+                          );
+
+                          final List result = json.decode(response.body);
+                          final int length =
+                              result[1]['ingredient_response'].length;
+
+                          if (length == 0) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const NoResultScreen(),
+                              ),
+                            );
+                          } else {
+                            await Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => ListIngredientsPage(
+                                  resultData: result,
+                                  resultLength: length,
+                                ),
+                              ),
+                            );
+                          }
+                        } on Exception catch (_) {
+                          rethrow;
+                        }
+                      },
+                      backgroundColor: Colors.blue,
+                      child: const Icon(Icons.refresh),
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -137,79 +257,123 @@ class ListIngredientsPageState extends State<ListIngredientsPage> {
           Stack(
             alignment: Alignment.bottomRight,
             children: [
-              SpeedDial(
-                icon: Icons.keyboard_arrow_up,
-                activeIcon: Icons.close,
-                label: floatExtended
-                    ? const Text("Open")
-                    : null, // The label of the main button.
-                /// The active label of the main button, Defaults to label if not specified.
-                activeLabel: floatExtended ? const Text("Close") : null,
-                spaceBetweenChildren: 15,
-                children: [
-                  SpeedDialChild(
-                    child: const Icon(Icons.cameraswitch),
-                    label: 'Scan again',
-                    labelStyle: const TextStyle(
-                      fontSize: 18,
-                    ),
-                    onTap: () async {
-                      await availableCameras().then(
-                        (cameras) => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ScannerPage(cameras: cameras),
-                          ),
+              SizedBox(
+                height: (MediaQuery.sizeOf(context).height) * 0.06,
+                child: FittedBox(
+                  child: SpeedDial(
+                    icon: Icons.keyboard_arrow_up,
+                    activeIcon: Icons.close,
+                    label: floatExtended
+                        ? const Text("Open")
+                        : null, // The label of the main button.
+                    /// The active label of the main button, Defaults to label if not specified.
+                    activeLabel: floatExtended ? const Text("Close") : null,
+                    spaceBetweenChildren: 12,
+                    children: [
+                      SpeedDialChild(
+                        child: const Icon(
+                          Icons.cameraswitch,
                         ),
-                      );
-                    },
-                  ),
-                  SpeedDialChild(
-                    child: const Icon(Icons.menu_book),
-                    label: 'Get Recipes',
-                    labelStyle: const TextStyle(
-                      fontSize: 18,
-                    ),
-                    onTap: () async {
-                      final user = FirebaseAuth.instance.currentUser;
-                      final idToken = await user?.getIdTokenResult();
-                      try {
-                        final response = await http.get(
-                          Uri.parse(
-                              "https://veo3slmw0g.execute-api.us-west-2.amazonaws.com/Prod/"),
-                          // Send authorization headers to the backend.
-                          headers: {
-                            HttpHeaders.authorizationHeader:
-                                idToken!.token.toString(),
-                            "unique_id": widget.resultData[0]['unique_id'],
-                          },
-                        );
-                        final lambdaResponse = jsonDecode(response.body);
-                        debugPrint(lambdaResponse.toString());
-                        final int length = lambdaResponse.length;
-
-                        if (length == 0) {
-                          debugPrint(
-                            "no result",
-                          );
-                        } else {
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ListRecipesPage(
-                                resultData: lambdaResponse,
-                                resultLength: length,
+                        label: 'Retake Photo',
+                        labelStyle: const TextStyle(
+                          fontSize: 15,
+                        ),
+                        onTap: () async {
+                          if (await pickImageCamera()) {
+                            await Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => DisplayPictureScreen(
+                                  // Pass the automatically generated path to
+                                  // the DisplayPictureScreen widget.
+                                  imagePath: image!.path,
+                                ),
                               ),
-                            ),
-                          );
-                        }
-                      } on Exception catch (_) {
-                        rethrow;
-                      }
-                    },
+                            );
+                          } else {
+                            const Text("No image selected");
+                          }
+                        },
+                        // onTap: () async {
+                        //   await availableCameras().then(
+                        //     (cameras) => Navigator.push(
+                        //       context,
+                        //       MaterialPageRoute(
+                        //         builder: (context) => ScannerPage(cameras: cameras),
+                        //       ),
+                        //     ),
+                        //   );
+                        // },
+                      ),
+                      SpeedDialChild(
+                        child: const Icon(Icons.image),
+                        label: 'Reselect Photo',
+                        labelStyle: const TextStyle(
+                          fontSize: 16,
+                        ),
+                        onTap: () async {
+                          if (await pickImage()) {
+                            await Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => DisplayPictureScreen(
+                                  // Pass the automatically generated path to
+                                  // the DisplayPictureScreen widget.
+                                  imagePath: image!.path,
+                                ),
+                              ),
+                            );
+                          } else {
+                            const Text("No image selected");
+                          }
+                        },
+                      ),
+                      SpeedDialChild(
+                        child: const Icon(Icons.menu_book),
+                        label: 'Get Recipes',
+                        labelStyle: const TextStyle(
+                          fontSize: 16,
+                        ),
+                        onTap: () async {
+                          final user = FirebaseAuth.instance.currentUser;
+                          final idToken = await user?.getIdTokenResult();
+                          try {
+                            final response = await http.get(
+                              Uri.parse(
+                                  "https://veo3slmw0g.execute-api.us-west-2.amazonaws.com/Prod/"),
+                              // Send authorization headers to the backend.
+                              headers: {
+                                HttpHeaders.authorizationHeader:
+                                    idToken!.token.toString(),
+                                "unique_id": widget.resultData[0]['unique_id'],
+                              },
+                            );
+                            final lambdaResponse = jsonDecode(response.body);
+                            debugPrint(lambdaResponse.toString());
+                            final int length = lambdaResponse.length;
+
+                            if (length == 0) {
+                              debugPrint(
+                                "no result",
+                              );
+                            } else {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ListRecipesPage(
+                                    resultData: lambdaResponse,
+                                    resultLength: length,
+                                  ),
+                                ),
+                              );
+                            }
+                          } on Exception catch (_) {
+                            rethrow;
+                          }
+                        },
+                      ),
+                    ],
+                    isOpenOnStart: false,
                   ),
-                ],
-                isOpenOnStart: false,
+                ),
               ),
             ],
           ),

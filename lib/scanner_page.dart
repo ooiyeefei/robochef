@@ -14,7 +14,6 @@ import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:aws_signature_v4/aws_signature_v4.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 
 import 'list_ingredients_page.dart';
@@ -313,7 +312,6 @@ class DisplayPictureScreen extends StatelessWidget {
                           HttpHeaders.authorizationHeader:
                               idToken!.token.toString(),
                           HttpHeaders.contentTypeHeader: 'image/jpeg',
-                          "unique_id": "abcde",
                         },
                         // body: blob);
                         body: cleanFilename.readAsBytesSync());
