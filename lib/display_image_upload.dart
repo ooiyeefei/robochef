@@ -7,9 +7,10 @@ import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
-
+import 'package:loader_overlay/loader_overlay.dart';
 import 'list_ingredients_page.dart';
 import 'no_result.dart';
+import 'http_with_loader.dart';
 
 // A widget that displays the picture taken by the user.
 class DisplayPictureScreen extends StatelessWidget {
@@ -19,6 +20,7 @@ class DisplayPictureScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    
     return Scaffold(
       appBar: AppBar(title: const Text('Upload and get ingredients')),
       // resizeToAvoidBottomInset: false,
@@ -54,6 +56,7 @@ class DisplayPictureScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.cloud_upload),
         onPressed: () async {
+          
           final user = FirebaseAuth.instance.currentUser;
           final idToken = await user?.getIdTokenResult();
 
@@ -79,20 +82,21 @@ class DisplayPictureScreen extends StatelessWidget {
           // http upload - agw
           final http.Response response;
           try {
-            response = await http.post(
-                Uri.parse(
-                    "https://x0codvlexc.execute-api.us-west-2.amazonaws.com/Prod/"),
+            
+            HTTP http_with_loader = HTTP(context);
+            response = await http_with_loader.post(
+                "https://x0codvlexc.execute-api.us-west-2.amazonaws.com/Prod/",
                 // Send authorization headers to the backend.
-                headers: {
+                {
                   HttpHeaders.authorizationHeader: idToken!.token.toString(),
                   HttpHeaders.contentTypeHeader: 'image/jpeg',
                 },
-                body: cleanFilename.readAsBytesSync());
+                cleanFilename.readAsBytesSync());
 
             // final int statusCode =
             //     json.decode(response.statusCode.toString());
             // print(statusCode);
-
+            
             final List result = json.decode(response.body);
             final Map body = result.length != 2 ? {} : result[1];
             final int length = body.containsKey("ingredient_response") ? body["ingredient_response"].length : 0;

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
+import 'package:loader_overlay/loader_overlay.dart';
 
 import 'home.dart';
 
@@ -11,7 +12,11 @@ class AuthGate extends StatelessWidget {
   Widget build(BuildContext context) {
     final providers = [EmailAuthProvider()];
 
-    return MaterialApp(
+    return GlobalLoaderOverlay(
+      
+      // overlayColor: Colors.blue,
+      overlayColor : Colors.grey.withOpacity(0.4),
+      child: MaterialApp(
       initialRoute:
           FirebaseAuth.instance.currentUser == null ? '/sign-in' : '/home',
       routes: {
@@ -31,8 +36,8 @@ class AuthGate extends StatelessWidget {
           );
         },
       },
+    )
     );
-
     // return StreamBuilder<User?>(
     //   stream: FirebaseAuth.instance.authStateChanges(),
     //   builder: (context, snapshot) {
