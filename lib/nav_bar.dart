@@ -36,10 +36,10 @@ class NavBarState extends State<NavBar> {
           // case 1:
           //   widget.navigatorKey.currentState?.pushReplacementNamed("Scan");
           //   break;
+          // case 1:
+          //   widget.navigatorKey.currentState?.pushReplacementNamed("Recipe");
+          //   break;
           case 1:
-            widget.navigatorKey.currentState?.pushReplacementNamed("Recipe");
-            break;
-          case 2:
             widget.navigatorKey.currentState?.pushReplacementNamed("Account");
             break;
         }
@@ -56,15 +56,15 @@ class NavBarState extends State<NavBar> {
           ),
           label: 'Home',
         ),
-        NavigationDestination(
-          selectedIcon: Icon(
-            Icons.library_books,
-          ),
-          icon: Icon(
-            Icons.library_books_outlined,
-          ),
-          label: 'Recipe',
-        ),
+        // NavigationDestination(
+        //   selectedIcon: Icon(
+        //     Icons.library_books,
+        //   ),
+        //   icon: Icon(
+        //     Icons.library_books_outlined,
+        //   ),
+        //   label: 'Recipe',
+        // ),
         // NavigationDestination(
         //   selectedIcon: Icon(Icons.camera_alt),
         //   icon: Icon(Icons.camera_alt),

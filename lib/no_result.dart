@@ -1,6 +1,9 @@
-import 'package:camera/camera.dart';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'scanner_page.dart';
+import 'package:flutter/services.dart';
+import 'display_image_upload.dart';
+import 'package:image_picker/image_picker.dart';
 
 class NoResultScreen extends StatefulWidget {
   const NoResultScreen({
@@ -12,38 +15,49 @@ class NoResultScreen extends StatefulWidget {
 }
 
 class NoResultScreenState extends State<NoResultScreen> {
-  late List<CameraDescription> cameras;
-  late CameraController cameraController;
+  File? image;
 
-  Future<void> setupCameras() async {
-    // Obtain a list of the available cameras on the device.
-    // cameras = await availableCameras();
-
+  Future<bool> pickImage() async {
     try {
-      // initialize cameras.
-      cameras = await availableCameras();
+      XFile? image = await ImagePicker().pickImage(source: ImageSource.gallery);
 
-      // initialize camera controllers.
-      cameraController = CameraController(cameras[0], ResolutionPreset.high);
-      await cameraController.initialize();
-    } on CameraException catch (e) {
-      debugPrint("camera error $e");
+      if (image == null) {
+        return false;
+      } else {
+        setState(() => this.image = File(image.path));
+        debugPrint(image.path);
+        return true;
+      }
+    } on PlatformException catch (e) {
+      print('Failed to pick image: $e');
+      rethrow;
     }
-    if (!mounted) return;
-    setState(() {});
+  }
+
+  Future<bool> pickImageCamera() async {
+    try {
+      XFile? image = await ImagePicker().pickImage(source: ImageSource.camera);
+
+      if (image == null) {
+        return false;
+      } else {
+        setState(() => this.image = File(image.path));
+        debugPrint(image.path);
+        return true;
+      }
+    } on PlatformException catch (e) {
+      print('Failed to pick image: $e');
+      rethrow;
+    }
   }
 
   @override
   void initState() {
     super.initState();
-    // call the function above to initialize the camera
-    setupCameras();
   }
 
   @override
   void dispose() {
-    // Dispose of the controller when the widget is disposed.
-    cameraController.dispose();
     super.dispose();
   }
 
@@ -53,10 +67,11 @@ class NoResultScreenState extends State<NoResultScreen> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          Image.asset('images/robochef_sad.png'),
           const Align(
             alignment: Alignment.center,
             child: Text(
-              "Unfortunately we can't identify any ingredients :( \n \n Please try again! \n",
+              "\nUnfortunately we can't identify \n any ingredients :( \n \n Please try again! \n",
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,
@@ -66,14 +81,47 @@ class NoResultScreenState extends State<NoResultScreen> {
           ElevatedButton(
             child: const Text('Scan Again'),
             onPressed: () async {
-              await availableCameras().then(
-                (cameras) => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ScannerPage(cameras: cameras))),
-              );
+              if (await pickImageCamera()) {
+                debugPrint('goes to image pages');
+                await Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => DisplayPictureScreen(
+                      // Pass the automatically generated path to
+                      // the DisplayPictureScreen widget.
+                      imagePath: image!.path,
+                    ),
+                  ),
+                );
+              } else {
+                const Text("No image selected");
+              }
+
+              // await availableCameras().then(
+              //   (cameras) => Navigator.push(
+              //       context,
+              //       MaterialPageRoute(
+              //           builder: (context) => ScannerPage(cameras: cameras))),
+              // );
             },
-          )
+          ),
+          ElevatedButton(
+            child: const Text('Pick Another Image'),
+            onPressed: () async {
+              if (await pickImage()) {
+                await Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => DisplayPictureScreen(
+                      // Pass the automatically generated path to
+                      // the DisplayPictureScreen widget.
+                      imagePath: image!.path,
+                    ),
+                  ),
+                );
+              } else {
+                const Text("No image selected");
+              }
+            },
+          ),
         ],
       ),
     );

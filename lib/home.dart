@@ -194,12 +194,12 @@ class HomeScreenState extends State<HomeScreen> {
             );
           },
         );
-      case "Recipe":
-        return MaterialPageRoute(
-          builder: (context) {
-            return const NoResultScreen();
-          },
-        );
+      // case "Recipe":
+      //   return MaterialPageRoute(
+      //     builder: (context) {
+      //       return const NoResultScreen();
+      //     },
+      //   );
       // case "Scan":
       // return FutureBuilder<Widget>(
       //   future: _initializeControllerFuture,
