@@ -71,7 +71,7 @@ class NoResultScreenState extends State<NoResultScreen> {
           const Align(
             alignment: Alignment.center,
             child: Text(
-              "\nUnfortunately we can't identify \n any ingredients :( \n \n Please try again! \n",
+              "\nUnfortunately we can't identify \n any results :( \n \n Please try again! \n",
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,

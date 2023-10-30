@@ -209,20 +209,21 @@ class ListIngredientsPageState extends State<ListIngredientsPage> {
                         final user = FirebaseAuth.instance.currentUser;
                         final idToken = await user?.getIdTokenResult();
                         // http get to refresh ingredient lists
-                        
+
                         final http.Response response;
-                        
-                        
+
                         try {
                           HTTP http_with_loader = HTTP(context);
                           response = await http_with_loader.get(
                             "https://x0codvlexc.execute-api.us-west-2.amazonaws.com/Prod/refreshIngredients",
                             {
-                              HttpHeaders.authorizationHeader: idToken!.token.toString(),
-                              "unique_id": '${widget.resultData[0]['unique_id']}',
+                              HttpHeaders.authorizationHeader:
+                                  idToken!.token.toString(),
+                              "unique_id":
+                                  '${widget.resultData[0]['unique_id']}',
                             },
                           );
-                          
+
                           final List result = json.decode(response.body);
                           final int length =
                               result[1]['ingredient_response'].length;
@@ -338,30 +339,35 @@ class ListIngredientsPageState extends State<ListIngredientsPage> {
                           final user = FirebaseAuth.instance.currentUser;
                           final idToken = await user?.getIdTokenResult();
                           final http.Response response;
-                          
+
                           try {
                             HTTP http_with_loader = HTTP(context);
                             response = await http_with_loader.getWithRetries(
-                              "https://veo3slmw0g.execute-api.us-west-2.amazonaws.com/Prod/",
-                              // Send authorization headers to the backend.
-                              {
-                                HttpHeaders.authorizationHeader: idToken!.token.toString(),
-                                "unique_id": '${widget.resultData[0]['unique_id']}'
-                              },
-                              isEmpty: (http.Response result) {
-                                final lambdaResponse = jsonDecode(result.body);
-                                debugPrint(lambdaResponse.toString());
-                                final int length = lambdaResponse.length;
-                                return length == 0;
-                              }
-                            );
-                            
-                            
+                                "https://veo3slmw0g.execute-api.us-west-2.amazonaws.com/Prod/",
+                                // Send authorization headers to the backend.
+                                {
+                                  HttpHeaders.authorizationHeader:
+                                      idToken!.token.toString(),
+                                  "unique_id":
+                                      '${widget.resultData[0]['unique_id']}'
+                                }, isEmpty: (http.Response result) {
+                              final lambdaResponse = jsonDecode(result.body);
+                              debugPrint(lambdaResponse.toString());
+                              final int length = lambdaResponse.length;
+                              return length == 0;
+                            });
+
                             final lambdaResponse = jsonDecode(response.body);
                             debugPrint(lambdaResponse.toString());
                             final int length = lambdaResponse.length;
 
                             if (length == 0) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const NoResultScreen(),
+                                ),
+                              );
                               debugPrint(
                                 "no result",
                               );
@@ -372,6 +378,7 @@ class ListIngredientsPageState extends State<ListIngredientsPage> {
                                   builder: (context) => ListRecipesPage(
                                     resultData: lambdaResponse,
                                     resultLength: length,
+                                    uniqueId: widget.resultData[0]['unique_id'],
                                   ),
                                 ),
                               );
