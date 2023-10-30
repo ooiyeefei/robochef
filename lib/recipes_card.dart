@@ -65,6 +65,38 @@ class RecipeCard extends StatelessWidget {
         child: Stack(
           children: [
             Align(
+              alignment: Alignment.topRight,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(5),
+                    margin: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.blueGrey.shade800,
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(
+                          Icons.bubble_chart,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                        SizedBox(width: 7),
+                        Text(
+                          "LLM: \$placeholder",
+                          style: TextStyle(
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            ),
+            Align(
               alignment: Alignment.center,
               child: Container(
                 padding: const EdgeInsets.symmetric(
@@ -72,7 +104,7 @@ class RecipeCard extends StatelessWidget {
                   vertical: 5.0,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.6),
+                  color: Colors.white.withOpacity(0.8),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
@@ -96,7 +128,7 @@ class RecipeCard extends StatelessWidget {
                     padding: const EdgeInsets.all(5),
                     margin: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withOpacity(0.8),
                       borderRadius: BorderRadius.circular(15),
                     ),
                     child: Row(

@@ -31,6 +31,7 @@ class ListRecipesPageState extends State<ListRecipesPage> {
     return Scaffold(
       appBar: AppBar(title: const Text("Let's Get Cookin' 🍳")),
       body: SingleChildScrollView(
+        padding: const EdgeInsets.only(bottom: 60),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
