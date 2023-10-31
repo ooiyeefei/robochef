@@ -68,6 +68,7 @@ class RecipeCard extends StatelessWidget {
               alignment: Alignment.topRight,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
                     padding: const EdgeInsets.all(5),
