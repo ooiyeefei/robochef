@@ -50,6 +50,7 @@ class ListRecipesPageState extends State<ListRecipesPage> {
                       ['missing_ingredients'],
                   instructions: widget.resultData[index]['instructions'],
                   thumbnailUrl: widget.resultData[index]['imgUrl'],
+                  llmModel: widget.resultData[index]['llm_model_used'],
                 );
               },
             ),

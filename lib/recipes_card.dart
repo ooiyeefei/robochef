@@ -8,6 +8,7 @@ class RecipeCard extends StatelessWidget {
   final List missingIngredients;
   final Map<String, dynamic> instructions;
   final String thumbnailUrl;
+  final String llmModel;
 
   const RecipeCard({
     super.key,
@@ -17,9 +18,25 @@ class RecipeCard extends StatelessWidget {
     required this.missingIngredients,
     required this.instructions,
     required this.thumbnailUrl,
+    required this.llmModel,
   });
+
+  String transformText(llmModel) {
+    switch (llmModel) {
+      case "falcon-40b":
+        return "Falcon 40B";
+      case "jurassic-2-mid":
+        return "Jurassic-2 Mid";
+      case "claude-instant":
+        return "Claude Instant";
+      default:
+        return "null";
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    String llmModelName = transformText(llmModel);
     return InkWell(
       onTap: () {
         Navigator.push(
@@ -77,17 +94,17 @@ class RecipeCard extends StatelessWidget {
                       color: Colors.blueGrey.shade800,
                       borderRadius: BorderRadius.circular(15),
                     ),
-                    child: const Row(
+                    child: Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.bubble_chart,
                           color: Colors.white,
                           size: 18,
                         ),
-                        SizedBox(width: 7),
+                        const SizedBox(width: 7),
                         Text(
-                          "LLM: \$placeholder",
-                          style: TextStyle(
+                          "LLM: $llmModelName",
+                          style: const TextStyle(
                             color: Colors.white,
                           ),
                         ),
